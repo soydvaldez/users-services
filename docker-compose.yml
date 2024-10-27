@@ -1,0 +1,70 @@
+version: "3.8"
+services:
+  users-services:
+    image: localhost:5000/users-services:1.0.0
+    build: 
+      context: .   # Ruta del directorio donde está el Dockerfile
+      dockerfile: Dockerfile     
+    container_name: users-container
+    ports:
+      - "4000:4000"
+    restart: always
+    environment:
+      NODE_ENV: production
+    networks:
+      virtual_network:
+        ipv4_address: 173.18.0.2
+    # depends_on:
+    #   - postgres-services
+
+  users-postgres-services:
+    image: localhost:5000/users-postgres-services:1.0.0
+    build: 
+      context: deploy/postgres-services   # Ruta del directorio donde está el Dockerfile
+      dockerfile: Dockerfile
+    container_name: users-postgres-container
+    # restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128MB
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    networks:
+      virtual_network:
+        ipv4_address: 173.18.0.3
+  
+  mysql-service:
+    image: mysql
+    container_name: mysql-service
+    restart: always
+    shm_size: 128MB
+    environment:
+      MYSQL_USER: daniel
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: elprogreso
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    networks:
+      virtual_network:
+        ipv4_address: 173.18.0.4
+    volumes:
+       - mysql-data:/var/lib/mysql  # Corregido aquí
+
+
+volumes:
+  mysql-data:  # Definición del volumen sin el guion
+  postgres-data:
+
+networks:
+  virtual_network:
+    name: app-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 173.18.0.0/16
+          gateway: 173.18.0.1
