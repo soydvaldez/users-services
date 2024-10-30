@@ -22,7 +22,7 @@ export class UserRepository {
   private async ensureInitialized() {
     try {
       await this.datasourceInitialized;
-      console.log("Base de datos inicializada");
+      // console.log("Base de datos inicializada");
     } catch (error) {
       console.error("Error al inicializar la base de datos:", error);
       throw error; // Propagar el error

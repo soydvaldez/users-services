@@ -14,7 +14,7 @@ export class RoleRepository {
     try {
       // const response = await this.datasourceInitialized;
       // console.log(response);
-      console.log("Base de datos inicializada");
+      // console.log("Base de datos inicializada");
     } catch (error) {
       console.error("Error al inicializar la base de datos:", error);
       throw error; // Propagar el error

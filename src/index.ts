@@ -1,35 +1,18 @@
-import express, { NextFunction, Request, Response } from "express";
-import { RouteSecurity } from "./middleware/handleAuthenticated";
+import dotenv from "dotenv";
+const ENVIRONMENT = process.env.NODE_ENV || "development";
+import path from "path";
+
+const envFile =
+  ENVIRONMENT === "production" ? ".env.production" : ".env.development";
+dotenv.config({ path: path.resolve(__dirname, envFile) });
+
 import "reflect-metadata";
-import { UserService } from "./data/persistence/user.service";
-const app = express();
-app.use(express.json());
-const PORT = 3000;
-(async () => {
-  let userService: UserService = await UserService.getInstance();
+import { app } from "./app";
 
-  // Inicializa el sistema de seguridad de rutas
-  const routeSecurity = new RouteSecurity(userService);
+const HOST = app.get("HOST");
+const PORT = app.get("PORT");
 
-  // Extrae los middlewares
-  const { isAutenticated, isAuthorized, errorHandler } = routeSecurity;
-
-  // Define los middlewares de seguridad
-  const handleSecurity = [
-    isAutenticated.bind(routeSecurity),
-    isAuthorized.bind(routeSecurity),
-    errorHandler.bind(routeSecurity),
-  ];
-  app.use(handleSecurity);
-
-  app.post("/", (req, res) => {
-    const message = "Hola mundo";
-    res.status(200).json({ resource: message });
-    return;
-  });
-
-  // Hacemos que el servidor escuche en el puerto 3000
-  app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  });
-})();
+app.listen(PORT, HOST, () => {
+  console.log(`Servidor corriendo en ${HOST}:${PORT}`);
+  console.log(`Environment: ${ENVIRONMENT}`);
+});

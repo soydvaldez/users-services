@@ -49,5 +49,9 @@ scripts/deploy/logs_server_heroes.txt
 src/.env*
 
 
-# deploy/postgres-services/logs/
-# deploy/users-services/logs/
+deploy/postgres-services/logs/
+deploy/postgres-services/sql/database.sql
+deploy/users-services/logs/
+
+scripts/
+

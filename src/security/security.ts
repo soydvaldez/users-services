@@ -1,7 +1,7 @@
 import { UserAdapter } from "../user.map.js";
-import { UserReponse, UserRol, Resource } from "./user.interface";
+import { UserResponse, UserRole, Resource } from "../controllers/interfaces/user.interface.js";
 
-export const usersResponse: UserReponse[] = [
+export const usersResponse: UserResponse[] = [
   {
     id: 1,
     username: "user1",
@@ -25,7 +25,7 @@ export const usersResponse: UserReponse[] = [
   },
 ];
 
-export const roles: UserRol[] = [
+export const roles: UserRole[] = [
   { id: 1, rol: "admin" },
   { id: 2, rol: "authenticated" },
   { id: 3, rol: "anonymous" },
