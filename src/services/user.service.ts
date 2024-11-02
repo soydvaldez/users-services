@@ -1,3 +1,4 @@
+import { UserDtoMapper } from "../adapters/controllers/user.dto.mapper";
 import { UserRepository } from "../data/persistence/repositories/user.repository";
 
 export class UserService {
@@ -8,6 +9,7 @@ export class UserService {
   }
 
   async getAll() {
-    return await this.userRepository.getAllUsers();
+    const userBussinesList = await this.userRepository.getAll();
+    return await UserDtoMapper.mapListToControllerModel(userBussinesList);
   }
 }

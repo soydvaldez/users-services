@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import { UserService } from "../services/user.service";
-import { UserRepository } from "../data/persistence/repositories/user.repository";
+import { userRepository } from "../data/persistence/persistence.module";
 
 export const userRoutes = Router();
 
@@ -17,13 +17,20 @@ class UserController {
   };
 }
 
-const userService = new UserService(UserRepository.getInstance());
+const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 
 userRoutes.post("/", userController.getAll);
+// request.path: /edit
+// request.originalUrl: /users/edit
+userRoutes.post(
+  "/edit",
+  (request: Request, res: Response, next: NextFunction) => {
+    return res.status(200).send("test");
+  });
+
 userRoutes.all("/", (req: Request, res: Response) => {
   return res
     .status(405)
     .json({ message: `Método ${req.method} no permitido en esta ruta` });
 });
-

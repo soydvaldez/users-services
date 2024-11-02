@@ -1,3 +1,4 @@
+import { roleRepository } from "../data/persistence/persistence.module";
 import { RoleService } from "../services/role.service";
 import { NextFunction, Response, Request, Router } from "express";
 
@@ -12,7 +13,7 @@ class RoleController {
   };
 }
 
-let roleService = new RoleService();
+let roleService = new RoleService(roleRepository);
 const roleController = new RoleController(roleService);
 
 roleRoutes.get("/", roleController.getAllRoles);
