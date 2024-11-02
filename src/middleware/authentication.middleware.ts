@@ -32,6 +32,18 @@ export class UserAuthenticationMiddleware {
     let authUserDTO: AuthUserDTO = req.body;
     const { email, password } = authUserDTO;
 
+    if (!email && !password) {
+      // Eres un usuario anonimo
+      req.user = {
+        email: "",
+        password: "",
+        role: {
+          name: "Anonymous",
+        },
+      };
+      return next();
+    }
+
     if (!email || !password) {
       return next(new Error("Email or password are missing"));
     }
@@ -46,7 +58,12 @@ export class UserAuthenticationMiddleware {
       return next(errorAuth);
     }
 
-    if (!(await this.handleAutentication(userFindedByEmail))) {
+    const credentials: { email: string; password: string } = {
+      email,
+      password,
+    };
+
+    if (!(await this.validateUserIdentity(credentials))) {
       let errorAuth = new Error();
       errorAuth.name = "AuthenticationError";
       errorAuth.message = "The email or password are invalid";
@@ -57,9 +74,12 @@ export class UserAuthenticationMiddleware {
     next();
   };
 
-  private async handleAutentication(userFindedByEmail: UserFindResult) {
+  private async validateUserIdentity(credentials: {
+    email: string;
+    password: string;
+  }) {
     const isPasswordValid =
-      await this.userAuthenticationService.comparePassword(userFindedByEmail);
+      await this.userAuthenticationService.validateUserIdentity(credentials);
     return isPasswordValid;
   }
 }

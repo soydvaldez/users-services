@@ -3,10 +3,11 @@ import micromatch from "micromatch";
 import { log } from "console";
 import { UserAuthenticationService } from "../services/userauth.service";
 
-type Role = "Admin" | "Editor" | "User" | "Viewer";
+type Role = "Admin" | "Editor" | "User" | "Viewer" | "Anonymous";
 
 export class UserAutorizationMiddleware {
   permissions: Record<Role, string[]> = {
+    Anonymous: ["/login", "/register"],
     Admin: ["/**"],
     Editor: ["/users/edit/**", "/roles/**"],
     User: ["/profile", "/dashboard"],
@@ -30,7 +31,7 @@ export class UserAutorizationMiddleware {
     const allowRoutes = this.permissions[roleName];
 
     const isAuthorized = allowRoutes.some((pattern) => {
-      return micromatch.isMatch(req.baseUrl, pattern);
+      return micromatch.isMatch(req.path, pattern);
     });
 
     if (!isAuthorized) {
@@ -39,7 +40,12 @@ export class UserAutorizationMiddleware {
       authError.message = "You aren't authorized";
       return next(authError);
     }
-    log("You are authorized! continue: ", req.baseUrl);
+
+    const email = userRequest.email.trim() ? userRequest.email : "no-content";
+
+    log(
+      `You are authorized! email: ${email} role: ${roleName} route: ${req.path}`
+    );
     next();
   };
 }

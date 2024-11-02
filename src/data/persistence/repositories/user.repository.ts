@@ -1,9 +1,10 @@
-import { DataSource } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { User } from "../entities/User";
-import { AppDataSource } from "../config/datasource";
 import { NewUser } from "../../../interface/user.interface";
 import { UserAdapter } from "../adapters/user.adapter";
 import { Role } from "../entities/Role";
+import { UserEntityMapper } from "../../../adapters/data/user.entity.mapper";
+import { User as UserBusiness } from "../../../services/models/user.model";
 
 type UserFindResult = {
   email: string;
@@ -12,16 +13,16 @@ type UserFindResult = {
 };
 
 export class UserRepository {
-  private datasourceInitialized: Promise<DataSource>;
   private static instance: UserRepository;
+  private userRepository: Repository<User>;
 
-  constructor() {
-    this.datasourceInitialized = AppDataSource.initialize();
+  constructor(dataSource: DataSource) {
+    this.userRepository = dataSource.getRepository(User);
   }
 
   private async ensureInitialized() {
     try {
-      await this.datasourceInitialized;
+      // await this.datasourceInitialized;
       // console.log("Base de datos inicializada");
     } catch (error) {
       console.error("Error al inicializar la base de datos:", error);
@@ -34,7 +35,7 @@ export class UserRepository {
     try {
       if (newUser && newUser.length === 1) {
         const userEntity = UserAdapter.mapNewUserToEntity(newUser[0]);
-        const userEntitySaved: User = await AppDataSource.manager.save(
+        const userEntitySaved: User = await this.userRepository.manager.save(
           userEntity
         );
         // console.log("Usuario guardado con éxito", userEntitySaved);
@@ -42,7 +43,7 @@ export class UserRepository {
       } else {
         // Persiste un arreglo de usuarios
         const userEntities = UserAdapter.mapNewUserListToEntityList(newUser);
-        await AppDataSource.manager.save(userEntities);
+        await this.userRepository.manager.save(userEntities);
         console.log("Lost usuarios se guardaron con éxito");
         // return userEntitiesSaved;
       }
@@ -63,7 +64,7 @@ export class UserRepository {
     userUpdate.isActive = inUserUpdate.isActive;
 
     try {
-      const result = await AppDataSource.manager
+      const result = await this.userRepository.manager
         .createQueryBuilder()
         .update(User)
         .set({
@@ -83,24 +84,21 @@ export class UserRepository {
     }
   }*/
 
-  async getAllUsers(): Promise<User[]> {
+  async getAll(): Promise<UserBusiness[]> {
     await this.ensureInitialized();
-
     try {
-      const users: User[] = await AppDataSource.manager.find(User);
-      // console.log("Todos los usuarios encontrados:", users);
-
-      return users;
+      const users = await this.userRepository.manager.find(User);
+      return UserEntityMapper.mapListToBusinessModel(users);
     } catch (error) {
       console.error("Error al consultar usuarios:", error);
-      return []; // Retorna un arreglo vacío en caso de error
+      return [];
     }
   }
 
   // Método para cerrar la conexión
   async closeConnection() {
     try {
-      await AppDataSource.destroy(); // Cerrar la conexión
+      // await this.userRepository.destroy(); // Cerrar la conexión
       console.log("Conexión a la base de datos cerrada.");
     } catch (error) {
       console.error("Error al cerrar la conexión:", error);
@@ -112,7 +110,7 @@ export class UserRepository {
 
     try {
       const usersFindedByEmail: User | null =
-        await AppDataSource.manager.findOne(User, {
+        await this.userRepository.manager.findOne(User, {
           where: { email },
         });
 
@@ -137,62 +135,10 @@ export class UserRepository {
   }
 
   // Método para obtener la instancia
-  public static getInstance(): UserRepository {
-    if (!UserRepository.instance) {
-      UserRepository.instance = new UserRepository();
-    }
-    return UserRepository.instance;
-  }
+  // public static getInstance(): UserRepository {
+  // if (!UserRepository.instance) {
+  // UserRepository.instance = new UserRepository();
+  // }
+  // return UserRepository.instance;
+  // }
 }
-
-// Uso del servicio
-function initdata() {
-  (async () => {
-    const userRepository = new UserRepository();
-    const newUser = new User();
-    newUser.firstName = "John";
-    newUser.lastName = "Doe";
-    newUser.email = "user1@domain.com";
-    newUser.isActive = true;
-
-    try {
-      const userCreated = await userRepository.createUser(getUser());
-      if (userCreated) {
-        console.log("Usuario creado:", userCreated);
-      }
-
-      const users: User[] = await userRepository.getAllUsers();
-      if (users.length === 0) {
-        console.log("No hay usuarios en la base de datos.");
-      } else {
-        console.log("Usuarios en la base de datos:");
-        users.forEach((user) => {
-          console.log(user);
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  })();
-
-  function getUser(): NewUser[] {
-    let user1: NewUser = {
-      firstName: "John",
-      lastName: "Doe",
-      email: "johndoe@domain.com",
-      isActive: true,
-      password: "",
-    };
-
-    let user2: NewUser = {
-      firstName: "Joe",
-      lastName: "Smith",
-      email: "joesmith@domain.com",
-      isActive: true,
-      password: "",
-    };
-    return [user1, user2];
-  }
-}
-
-// initdata();

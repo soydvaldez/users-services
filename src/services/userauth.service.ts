@@ -22,7 +22,7 @@ export class UserAuthenticationService {
   async register(registerUserDTO: RegisterUserDTO) {
     let user: User = this.createUser(registerUserDTO);
 
-    await user.hashPassword(this.hashService);
+    await user.generatePasswordHash(this.hashService);
 
     const newUser: NewUser = {
       firstName: user.getFirstName(),
@@ -37,29 +37,43 @@ export class UserAuthenticationService {
     return user;
   }
 
-  // Delega la responsabilidad a un servicio dedicado a ello:
-  // Necesito la password en plano y la hash_password
-  async comparePassword(userFindedByEmail: {
-    email: string;
-    password: string;
-  }) {
+  /**
+   *
+   * @param credentials email and plain password
+   * @returns isMatchPassword boolean
+   */
+  //
+  async validateUserIdentity(credentials: { email: string; password: string }) {
     const findUser: {
       email: string;
       password: string;
-    } = await this.userRepository.findByEmail(userFindedByEmail.email);
-    const userBussines = this.createUserSign(findUser);
-    const isMatch = await userBussines.compare(this.hashService, "secret");
+    } = await this.findByEmail(credentials.email);
 
-    return isMatch;
+    const userBussines = this.createUserLogin(findUser);
+    const isMatchPassword = await userBussines.verifyPasswordHash(
+      this.hashService,
+      credentials.password
+    );
+
+    return isMatchPassword;
   }
 
-  createUserSign(findUser: { email: string; password: string }) {
+  /**
+   * Crea un modelo de negocio "User" a partir de un "findUser"
+   * @param findUser: { email: string; password: string }
+   * @returns User
+   */
+  createUserLogin(findUser: { email: string; password: string }): User {
     return User.Builder.setEmail(findUser.email)
       .setPassword(findUser.password)
       .build();
   }
 
-  // Método privado para construir el usuario desde el DTO
+  /**
+   * Crea un modelo de negocio "User" a partir de un "registerUserDTO"
+   * @param registerUserDTO
+   * @returns User
+   */
   private createUser(registerUserDTO: RegisterUserDTO): User {
     return User.Builder.setfirstName(registerUserDTO.firstName)
       .setlastName(registerUserDTO.lastName)

@@ -1,4 +1,4 @@
-import { log } from "console";
+import { Role } from "../../data/persistence/entities/Role";
 import { HashService } from "../hash.service";
 
 export class User {
@@ -6,14 +6,14 @@ export class User {
   private lastName: string;
   private email: string;
   private password: string;
-  private hashService: HashService;
+  private role: Role;
 
   constructor(builder: UserBuilder) {
     this.firstName = builder.firstName;
     this.lastName = builder.lastName;
     this.email = builder.email;
     this.password = builder.password;
-    this.hashService = builder.hashService;
+    this.role = builder.role;
   }
 
   // Getters
@@ -33,15 +33,22 @@ export class User {
     return this.password; // Considera que la contraseña debería estar hasheada
   }
 
+  public getRol(): Role {
+    return this.role; // Considera que la contraseña debería estar hasheada
+  }
+
   public getFullName() {
     return this.firstName + this.lastName;
   }
 
-  public async hashPassword(hashService: HashService): Promise<void> {
+  public async generatePasswordHash(hashService: HashService): Promise<void> {
     this.password = await hashService.hash(this.password);
   }
 
-  public async compare(hashService: HashService, plainPassword: string) {
+  public async verifyPasswordHash(
+    hashService: HashService,
+    plainPassword: string
+  ) {
     return await hashService.compare(this.password, plainPassword);
   }
 
@@ -51,12 +58,14 @@ export class User {
   }
 }
 
-class UserBuilder {
+export class UserBuilder {
   public firstName: string = "";
   public lastName: string = "";
   public email: string = "";
   public password: string = "";
-  public hashService!: HashService;
+  public role: Role = {
+    name: "",
+  };
 
   public setfirstName(firstName: string): this {
     this.firstName = firstName;
@@ -78,8 +87,8 @@ class UserBuilder {
     return this;
   }
 
-  public setHashService(hashService: HashService) {
-    this.hashService = hashService;
+  public setRole(role: Role): this {
+    this.role = role;
     return this;
   }
 

@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import { DataSource } from "typeorm";
 import path from "path";
 
 const ENVIRONMENT = process.env.NODE_ENV || "development";
@@ -47,26 +46,26 @@ if (ENVIRONMENT == "development") {
   subscribers = properties["development"].subjects;
 }
 
-export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: process.env.HOST ?? "localhost",
-  port: Number(process.env.PORT) ?? 5432,
-  username: process.env.USERNAME ?? "postgres",
-  password: process.env.PASSWORD ?? "postgres",
-  database: process.env.DATABASE ?? "mydatabase",
-  synchronize: false,
-  logging: false,
-  entities: [entities],
-  migrations: ["src/data/persistence/migrations/**/*.ts"],
-  subscribers: ["src/data/persistence/subscribers/**/*.ts"],
-});
+// export const AppDataSource = new DataSource({
+  // type: "postgres",
+  // host: process.env.HOST ?? "localhost",
+  // port: Number(process.env.PORT) ?? 5432,
+  // username: process.env.USERNAME ?? "postgres",
+  // password: process.env.PASSWORD ?? "postgres",
+  // database: process.env.DATABASE ?? "mydatabase",
+  // synchronize: false,
+  // logging: false,
+  // entities: [entities],
+  // migrations: ["src/data/persistence/migrations/**/*.ts"],
+  // subscribers: ["src/data/persistence/subscribers/**/*.ts"],
+// });
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log(
-      "Data Source has been initialized!" + " ENVIRONMENT: " + ENVIRONMENT
-    );
-  })
-  .catch((err) => {
-    console.error("Error during Data Source initialization", err);
-  });
+// AppDataSource.initialize()
+  // .then(() => {
+    // console.log(
+      // "Data Source has been initialized!" + " ENVIRONMENT: " + ENVIRONMENT
+    // );
+  // })
+  // .catch((err) => {
+    // console.error("Error during Data Source initialization", err);
+  // });
