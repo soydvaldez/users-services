@@ -1,5 +1,4 @@
 import { Role } from "../../data/persistence/entities/Role";
-import { HashService } from "../hash.service";
 
 export class User {
   private firstName: string;
@@ -39,17 +38,6 @@ export class User {
 
   public getFullName() {
     return this.firstName + this.lastName;
-  }
-
-  public async generatePasswordHash(hashService: HashService): Promise<void> {
-    this.password = await hashService.hash(this.password);
-  }
-
-  public async verifyPasswordHash(
-    hashService: HashService,
-    plainPassword: string
-  ) {
-    return await hashService.compare(this.password, plainPassword);
   }
 
   // Método estático para acceder al Builder

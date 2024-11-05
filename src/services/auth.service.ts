@@ -1,7 +1,7 @@
 import { RegisterUserDTO } from "../controllers/models/register.userDTO";
 import { UserRepository } from "../data/persistence/repositories/user.repository";
 import { NewUser } from "../interface/user.interface";
-import { HashService } from "./hash.service";
+import { HashService } from "./utils/hash.service";
 import { User } from "./models/user.model";
 import { Role } from "../data/persistence/entities/Role";
 
@@ -13,17 +13,15 @@ type UserFindResult = {
   role: Role;
 };
 
-export class UserAuthenticationService {
+export class AuthenticationService {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly hashService: HashService
+    private readonly userRepository: UserRepository
   ) {}
 
-  async register(registerUserDTO: RegisterUserDTO) {
-    let user: User = this.createUser(registerUserDTO);
+  public async register(registerUserDTO: RegisterUserDTO) {
+    let user: User = await this.createUser(registerUserDTO);
 
-    await user.generatePasswordHash(this.hashService);
-
+    // Es el contrato que se debe de cumplir para interactuar con la capa de datos
     const newUser: NewUser = {
       firstName: user.getFirstName(),
       lastName: user.getLastName(),
@@ -31,6 +29,7 @@ export class UserAuthenticationService {
       password: user.getPassword(),
       isActive: true,
     };
+
     const users: NewUser[] = [];
     users.push(newUser);
     this.userRepository.createUser(users);
@@ -50,12 +49,11 @@ export class UserAuthenticationService {
     } = await this.findByEmail(credentials.email);
 
     const userBussines = this.createUserLogin(findUser);
-    const isMatchPassword = await userBussines.verifyPasswordHash(
-      this.hashService,
-      credentials.password
-    );
 
-    return isMatchPassword;
+    return HashService.compareHashPassword(
+      credentials.password,
+      userBussines.getPassword()
+    );
   }
 
   /**
@@ -74,11 +72,13 @@ export class UserAuthenticationService {
    * @param registerUserDTO
    * @returns User
    */
-  private createUser(registerUserDTO: RegisterUserDTO): User {
+  private async createUser(registerUserDTO: RegisterUserDTO): Promise<User> {
     return User.Builder.setfirstName(registerUserDTO.firstName)
       .setlastName(registerUserDTO.lastName)
       .setEmail(registerUserDTO.email)
-      .setPassword(registerUserDTO.password)
+      .setPassword(
+        await HashService.generateHashedPassword(registerUserDTO.password)
+      )
       .build();
   }
 

@@ -46,7 +46,7 @@ scripts/deploy/logs_server_heroes.txt
 
 
 # Variables de entorno
-src/.env*
+
 
 
 deploy/postgres-services/logs/

@@ -1,25 +1,33 @@
 import { NextFunction, Request, Response } from "express";
 import micromatch from "micromatch";
 import { log } from "console";
-import { UserAuthenticationService } from "../services/userauth.service";
+import { AuthenticationService } from "../services/auth.service";
 
 type Role = "Admin" | "Editor" | "User" | "Viewer" | "Anonymous";
 
 export class UserAutorizationMiddleware {
+  private baseUrl = "/api/v1";
   permissions: Record<Role, string[]> = {
     Anonymous: ["/login", "/register"],
     Admin: ["/**"],
-    Editor: ["/users/edit/**", "/roles/**"],
+    Editor: ["/users/edit/**", "/roles/edit/**"],
     User: ["/profile", "/dashboard"],
     Viewer: ["/users", "/roles", "/users/{id}"],
   };
 
-  constructor(
-    private readonly userAuthenticationService: UserAuthenticationService
-  ) {}
+  constructor(private readonly authenticationService: AuthenticationService) {}
 
   isAuthorization = async (req: Request, res: Response, next: NextFunction) => {
     const userRequest = req.user;
+
+    // Si las rutas son: /login, /register dar acceso.
+    if (
+      req.path === `${this.baseUrl}/login` ||
+      req.path === `${this.baseUrl}/register`
+    ) {
+      console.log("Access Granted anonymous user");
+      return next();
+    }
 
     if (!userRequest?.role) {
       let error: string = "Access Denied";
@@ -31,7 +39,7 @@ export class UserAutorizationMiddleware {
     const allowRoutes = this.permissions[roleName];
 
     const isAuthorized = allowRoutes.some((pattern) => {
-      return micromatch.isMatch(req.path, pattern);
+      return micromatch.isMatch(req.path, this.baseUrl + pattern);
     });
 
     if (!isAuthorized) {
