@@ -16,8 +16,9 @@ export class UserRepository {
   private static instance: UserRepository;
   private userRepository: Repository<User>;
 
-  constructor(dataSource: DataSource) {
-    this.userRepository = dataSource.getRepository(User);
+  constructor(repository: Repository<User>) {
+    // this.userRepository = dataSource.getRepository(User);
+    this.userRepository = repository;
   }
 
   private async ensureInitialized() {

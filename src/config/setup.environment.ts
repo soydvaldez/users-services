@@ -1,10 +1,11 @@
+import { environmentConfig } from "./settings";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "node:path";
 
 const ENVIRONMENT = process.env.NODE_ENV || "development";
 
-export const settingUpEnvironment = async () => {
+export const setupEnvironment = async () => {
   let envFile: string = "";
 
   switch (ENVIRONMENT) {
@@ -26,8 +27,13 @@ export const settingUpEnvironment = async () => {
       console.error(`Error loading ${envFile}:`, result.error);
       process.exit(1);
     }
-    const successMessage = `File loaded successfully. Environment: "${ENVIRONMENT}" File: "${envPath}"`;
-    console.log(successMessage);
+    const { DB_CONFIG } = environmentConfig();
+    console.log(
+      `File loaded successfully. Current Environment: "${ENVIRONMENT}" File: "${envPath}"`
+    );
+    console.log(
+      `Database profile: "${ENVIRONMENT}" Properties: [{"HOST": "${DB_CONFIG.host}", "PORT":"${DB_CONFIG.port}","USERNAME":"${DB_CONFIG.username}, "DATABASE":"${DB_CONFIG.database}"}] `
+    );
   } else {
     console.error(`Error: ${envPath} file not found`);
     process.exit(1);

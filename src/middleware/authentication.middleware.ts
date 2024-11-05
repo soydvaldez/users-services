@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AuthRequestBody } from "../interface/auth.requestbody";
 import { AuthUserDTO } from "../controllers/models/auth.userDTO";
 import { Role } from "../data/persistence/entities/Role";
-import { UserAuthenticationService } from "../services/userauth.service";
+import { AuthenticationService } from "../services/auth.service";
 
 declare global {
   namespace Express {
@@ -20,9 +20,7 @@ type UserFindResult = {
 };
 
 export class UserAuthenticationMiddleware {
-  constructor(
-    private readonly userAuthenticationService: UserAuthenticationService
-  ) {}
+  constructor(private readonly authenticationService: AuthenticationService) {}
 
   isAuthentication = async (
     req: Request<{}, {}, AuthRequestBody>,
@@ -49,7 +47,7 @@ export class UserAuthenticationMiddleware {
     }
 
     const userFindedByEmail: UserFindResult =
-      await this.userAuthenticationService.findByEmail(email);
+      await this.authenticationService.findByEmail(email);
 
     if (!userFindedByEmail) {
       let errorAuth = new Error();
@@ -79,7 +77,7 @@ export class UserAuthenticationMiddleware {
     password: string;
   }) {
     const isPasswordValid =
-      await this.userAuthenticationService.validateUserIdentity(credentials);
+      await this.authenticationService.validateUserIdentity(credentials);
     return isPasswordValid;
   }
 }

@@ -1,15 +1,14 @@
-import { userRepository } from "../data/persistence/persistence.module";
-import { HashService } from "./hash.service";
-import { UserAuthenticationService } from "./userauth.service";
+import { UserRepository } from "../data/persistence/repositories/user.repository";
+import { HashUtils } from "./utils/hash.utils";
+import { AuthenticationService } from "./auth.service";
 
-const hashService = new HashService(); // Servicio para hashear datos planos y comprobar valores hash
+export const initializeServicesApp = async (userRepository: UserRepository) => {
+  const hashService = new HashUtils(); // Servicio para hashear datos planos y comprobar valores hash
 
-export const securityService = new UserAuthenticationService(
-  userRepository,
-  hashService
-);
+  const authService = new AuthenticationService(userRepository);
 
-export const SecurityServices = {
-  userRepository,
-  hashService,
+  return {
+    authService,
+    hashService,
+  };
 };

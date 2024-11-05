@@ -5,8 +5,9 @@ export class RoleRepository {
   // private datasourceInitialized: Promise<DataSource>;
   private roleRepository: Repository<Role>;
 
-  constructor(dataSource: DataSource) {
-    this.roleRepository = dataSource.getRepository(Role);
+  constructor(repository: Repository<Role>) {
+    // this.roleRepository = dataSource.getRepository(Role);
+    this.roleRepository = repository;
   }
 
   private async ensureInitialized() {

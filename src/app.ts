@@ -1,31 +1,73 @@
-import express, { NextFunction, Request, Response } from "express";
-// Extrae los middlewares
-import { userRoutes } from "./controllers/users.controller";
-import { roleRoutes } from "./controllers/role.controller";
-import { securityMiddlewares } from "./middleware/middleware.module";
-import { routerSecurity } from "./controllers/security.controller";
+import express from "express";
+import { environmentConfig } from "./config/settings";
+import { AuthController } from "./controllers/auth.controller";
+import { RoleController } from "./controllers/role.controller";
+import { UserController } from "./controllers/users.controller";
+import {
+  closeDependencies,
+  initializeDependencies,
+} from "./data/persistence/persistence.module";
+import { initializeMiddlewares } from "./middleware/middleware.module";
+import { AuthRoutes } from "./routes/auth.routes";
+import { RoleRoutes } from "./routes/role.routes";
+import { UserRouter } from "./routes/user.routes";
+import { AuthenticationService } from "./services/auth.service";
+import { RoleService } from "./services/role.service";
+import { UserService } from "./services/user.service";
+import morgan from "morgan";
 
-export const app = express();
-app.use(express.json());
+const app = express();
 
-let PORT = 3000;
-let HOST = "localhost";
-if (process.env.NODE_ENV === "production") {
-  PORT = 4000;
-  HOST = "0.0.0.0";
+const setupServer = async () => {
+  const userRepository = await initializeDependencies("UserRepository");
+  const userService = new UserService(userRepository);
+  const userController = new UserController(userService);
+  const userRoutes = new UserRouter(userController).getRoutes();
+
+  const roleRepository = await initializeDependencies("RoleRepository");
+  const roleService = new RoleService(roleRepository);
+  let roleController = new RoleController(roleService);
+  const { roleRoutes } = RoleRoutes(roleController);
+
+  const authenticationService = new AuthenticationService(userRepository);
+  const authController = new AuthController(authenticationService);
+  const { authRoutes } = AuthRoutes(authController);
+
+  const { securityMiddlewares } = initializeMiddlewares(authenticationService);
+
+  app.use(express.json());
+  app.use(morgan("dev"));
+  const baseUrl = "/api/v1";
+  app.use(securityMiddlewares);
+  app.use(`${baseUrl}/auth`, authRoutes);
+  app.use(`${baseUrl}/users`, userRoutes);
+  app.use(`${baseUrl}/roles`, roleRoutes);
+
+  app.use((req, res, next) => {
+    const message: string = "Página no encontrada";
+    res.status(404).json({ message });
+  });
+};
+
+async function initServer() {
+  await setupServer();
+  const { APP_CONFIG } = environmentConfig();
+
+  app.listen(APP_CONFIG.port, APP_CONFIG.host, () => {
+    console.log(`Server running on: ${APP_CONFIG.host}:${APP_CONFIG.port}`);
+  });
 }
 
-app.set("PORT", PORT);
-app.set("HOST", HOST);
+export { initServer };
 
-// Define los middlewares de seguridad
-app.use(securityMiddlewares);
-// Rutas de la aplicacion
-app.use("/security", routerSecurity);
-app.use("/users", userRoutes);
-app.use("/roles", roleRoutes);
+process.on("SIGINT", async () => {
+  console.log("Recibiendo señal (SIGINT) del cierre... CTTRL + C");
+  await closeDependencies();
+  process.exit(0);
+});
 
-app.use((req, res, next) => {
-  const message: string = "Página no encontrada";
-  res.status(404).json({ message });
+process.on("SIGTERM", async () => {
+  console.log("Recibiendo señal (SIGTERM) del cierre...");
+  await closeDependencies();
+  process.exit(0);
 });
