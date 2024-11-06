@@ -3,7 +3,6 @@ import { DataSource } from "typeorm";
 import { UserRepository } from "./repositories/user.repository";
 import { RoleRepository } from "./repositories/role.repository";
 import { initizalizeDatabase } from "./config/datasource";
-import { DB_CONFIG } from "./config/datasource";
 import { environmentConfig } from "../../config/settings";
 let AppDataSource: DataSource | null = null;
 let userRepository: UserRepository | null = null;
