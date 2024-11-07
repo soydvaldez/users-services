@@ -13,7 +13,7 @@ export const environmentConfig = () => {
   };
 
   const AUTH = {
-    secret_key: process.env.SECRET_KEY || "secret_key",
+    secret_key: process.env.JWT_SECRET_KEY || "secret_key",
   };
   return { APP_CONFIG, DB_CONFIG, AUTH };
 };

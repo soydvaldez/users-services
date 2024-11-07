@@ -3,7 +3,8 @@ import { DataSource } from "typeorm";
 import { UserRepository } from "./repositories/user.repository";
 import { RoleRepository } from "./repositories/role.repository";
 import { initizalizeDatabase } from "./config/datasource";
-import { environmentConfig } from "../../config/settings";
+import { DB_CONFIG } from "./config/datasource";
+
 let AppDataSource: DataSource | null = null;
 let userRepository: UserRepository | null = null;
 let roleRepository: RoleRepository | null = null;
@@ -26,8 +27,7 @@ async function getRepositories() {
   }
 }
 
-const initializeDependencies = async (repositoryName?: string) => {
-  const { DB_CONFIG } = environmentConfig();
+const initializeDependencies = async (DB_CONFIG: DB_CONFIG) => {
   try {
     // Establece la conexion a la base de datos
     if (!AppDataSource) {
@@ -41,16 +41,18 @@ const initializeDependencies = async (repositoryName?: string) => {
         "Database initializated! " + "Repositories initializated: [USER, ROLES]"
       );
     }
-
-    if (repositoryName) {
-      return repositoryMap.get(repositoryName);
-    }
-    return;
   } catch (error) {
     console.error("Error al conectar a la base de datos: ", error);
     process.exit(1);
   }
 };
+
+export function getRepository(repositoryName: string) {
+  if (repositoryMap.has(repositoryName)) {
+    return repositoryMap.get(repositoryName);
+  }
+  throw new Error("Repository not exists");
+}
 
 const closeDependencies = async () => {
   try {

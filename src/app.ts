@@ -6,6 +6,7 @@ import { UserController } from "./controllers/users.controller";
 import {
   closeDependencies,
   initializeDependencies,
+  getRepository,
 } from "./data/persistence/persistence.module";
 import { initializeMiddlewares } from "./middleware/middleware.module";
 import { AuthRoutes } from "./routes/auth.routes";
@@ -19,12 +20,12 @@ import morgan from "morgan";
 const app = express();
 
 const setupServer = async () => {
-  const userRepository = await initializeDependencies("UserRepository");
+  const userRepository = await getRepository("UserRepository");
   const userService = new UserService(userRepository);
   const userController = new UserController(userService);
   const userRoutes = new UserRouter(userController).getRoutes();
 
-  const roleRepository = await initializeDependencies("RoleRepository");
+  const roleRepository = await getRepository("RoleRepository");
   const roleService = new RoleService(roleRepository);
   let roleController = new RoleController(roleService);
   const { roleRoutes } = RoleRoutes(roleController);
@@ -50,8 +51,14 @@ const setupServer = async () => {
 };
 
 async function initServer() {
+  // initialize environmentConfig
+  const { APP_CONFIG, DB_CONFIG, AUTH } = environmentConfig();
+  // initialize Data Access && initialize repositories
+  await initializeDependencies(DB_CONFIG);
+  // initialize services
+  // initialize controllers
+  // initialize routes
   await setupServer();
-  const { APP_CONFIG } = environmentConfig();
 
   app.listen(APP_CONFIG.port, APP_CONFIG.host, () => {
     console.log(`Server running on: ${APP_CONFIG.host}:${APP_CONFIG.port}`);

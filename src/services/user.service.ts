@@ -10,6 +10,6 @@ export class UserService {
 
   async getAll() {
     const userBussinesList = await this.userRepository.getAll();
-    return await UserDtoMapper.mapListToControllerModel(userBussinesList);
+    return UserDtoMapper.mapListToControllerModel(userBussinesList);
   }
 }
