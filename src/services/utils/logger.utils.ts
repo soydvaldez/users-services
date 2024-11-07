@@ -1,9 +1,7 @@
 import pino from "pino";
 import path from "path";
-import fs from "fs";
 
 // Archivo de logs en JSON
-
 export const initLoggerService = async function() {
   // Configuración del archivo de logs en modo síncrono
   const logFile = await pino.destination({

@@ -12,5 +12,8 @@ export const environmentConfig = () => {
     password: process.env.DB_PASSWORD || "postgres",
   };
 
-  return { APP_CONFIG, DB_CONFIG };
+  const AUTH = {
+    secret_key: process.env.SECRET_KEY || "secret_key",
+  };
+  return { APP_CONFIG, DB_CONFIG, AUTH };
 };

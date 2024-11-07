@@ -1,14 +1,15 @@
 import { UserRepository } from "../data/persistence/repositories/user.repository";
-import { HashUtils } from "./utils/hash.utils";
 import { AuthenticationService } from "./auth.service";
+import { environmentConfig } from "../config/settings";
 
-export const initializeServicesApp = async (userRepository: UserRepository) => {
-  const hashService = new HashUtils(); // Servicio para hashear datos planos y comprobar valores hash
+(() => {
+  environmentConfig();
+  console.log(process.env.AUTH);
+  const initializeServicesApp = async (userRepository: UserRepository) => {
+    const authService = new AuthenticationService(userRepository);
 
-  const authService = new AuthenticationService(userRepository);
-
-  return {
-    authService,
-    hashService,
+    return {
+      authService,
+    };
   };
-};
+})();
