@@ -1,10 +1,9 @@
+import { AUTH } from "../config/env_setup";
 import { UserRepository } from "../data/persistence/repositories/user.repository";
 import { AuthenticationService } from "./auth.service";
-import { environmentConfig } from "../config/settings";
 
 (() => {
-  environmentConfig();
-  console.log(process.env.AUTH);
+  console.log(AUTH);
   const initializeServicesApp = async (userRepository: UserRepository) => {
     const authService = new AuthenticationService(userRepository);
 

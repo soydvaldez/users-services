@@ -1,12 +1,15 @@
 import jwt from "jsonwebtoken";
-import { environmentConfig } from "../../config/settings";
+import { AUTH } from "../../config/env_setup";
 
-const { AUTH } = environmentConfig();
-
-export class JWTUtils {
-  static signToken(user: { email: string; password: string }) {
-    return jwt.sign({ username: "", password: "secret password" }, AUTH.secret_key);
-  }
+interface userInput {
+  email: string;
+  password: string;
 }
 
-console.log(JWTUtils.signToken({ email: "", password: "" }));
+export class JWTUtils {
+  constructor() {}
+
+  static async signToken(user: userInput) {
+    return jwt.sign(user, AUTH.jwt_secret_key);
+  }
+}

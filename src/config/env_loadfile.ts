@@ -1,11 +1,11 @@
-import { environmentConfig } from "./settings";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "node:path";
 
-const ENVIRONMENT = process.env.NODE_ENV || "development";
+// export type environmentType = "development" | "production" | "testing";
 
-export const setupEnvironment = async () => {
+// Carga el archivo .env en funcion de la variable: ENVIRONMENT. Default: development
+export const loadEnvironmentFile = (ENVIRONMENT: string = "development") => {
   let envFile: string = "";
 
   switch (ENVIRONMENT) {
@@ -19,6 +19,7 @@ export const setupEnvironment = async () => {
       envFile = ".env.development";
       break;
   }
+
   const envPath = path.resolve(process.cwd(), envFile);
 
   if (fs.existsSync(envPath)) {
@@ -27,12 +28,14 @@ export const setupEnvironment = async () => {
       console.error(`Error loading ${envFile}:`, result.error);
       process.exit(1);
     }
-    const { DB_CONFIG } = environmentConfig();
+    // const { DB_CONFIG, APP_CONFIG } = environmentConfig();
     console.log(
-      `File loaded successfully. Current Environment: "${ENVIRONMENT}" File: "${envPath}"`
+      "================================================================================"
     );
+    console.log("ENVIRONMENT INITIALIZATED: " + ENVIRONMENT);
+    console.log(`File loaded successfully: ${envPath} `);
     console.log(
-      `Database profile: "${ENVIRONMENT}" Properties: [{"HOST": "${DB_CONFIG.host}", "PORT":"${DB_CONFIG.port}","USERNAME":"${DB_CONFIG.username}, "DATABASE":"${DB_CONFIG.database}"}] `
+      "================================================================================"
     );
   } else {
     console.error(`Error: ${envPath} file not found`);

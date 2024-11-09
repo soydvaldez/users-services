@@ -55,3 +55,4 @@ deploy/users-services/logs/
 
 scripts/
 
+.env.production

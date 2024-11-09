@@ -1,6 +1,6 @@
 # Etapa 1: Construcción
-# FROM node:20-alpine3.20 as build
-FROM node AS build
+FROM node:20-alpine3.20 as build
+# FROM node AS build
 
 # Definir el directorio de trabajo
 WORKDIR /app
@@ -18,8 +18,8 @@ COPY . .
 RUN npm run build
 
 # Etapa 2: Producción
-# FROM node:20-alpine3.20 AS production
-FROM node AS production
+FROM node:20-alpine3.20 AS production
+# FROM node AS production
 
 # RUN apt update && apt install -y curl
 # Definir el directorio de trabajo

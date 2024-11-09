@@ -1,5 +1,4 @@
 import express from "express";
-import { environmentConfig } from "./config/settings";
 import { AuthController } from "./controllers/auth.controller";
 import { RoleController } from "./controllers/role.controller";
 import { UserController } from "./controllers/users.controller";
@@ -16,6 +15,7 @@ import { AuthenticationService } from "./services/auth.service";
 import { RoleService } from "./services/role.service";
 import { UserService } from "./services/user.service";
 import morgan from "morgan";
+import { APP_CONFIG, DB_CONFIG } from "./config/env_setup";
 
 const app = express();
 
@@ -52,7 +52,7 @@ const setupServer = async () => {
 
 async function initServer() {
   // initialize environmentConfig
-  const { APP_CONFIG, DB_CONFIG, AUTH } = environmentConfig();
+
   // initialize Data Access && initialize repositories
   await initializeDependencies(DB_CONFIG);
   // initialize services
@@ -61,6 +61,13 @@ async function initServer() {
   await setupServer();
 
   app.listen(APP_CONFIG.port, APP_CONFIG.host, () => {
+    console.log(
+      "================================================================================"
+    );
+    console.log("SERVER INITIALIZATED");
+    console.log(
+      "================================================================================"
+    );
     console.log(`Server running on: ${APP_CONFIG.host}:${APP_CONFIG.port}`);
   });
 }
