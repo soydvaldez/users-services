@@ -27,6 +27,7 @@ WORKDIR /app
 
 # Copiar package.json y package-lock.json (solo las dependencias de producción)
 COPY package.json package-lock.json ./
+COPY .env.production ./
 
 # Instalar solo las dependencias necesarias para producción
 RUN npm install --only=production

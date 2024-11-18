@@ -21,18 +21,8 @@ export class UserRepository {
     this.userRepository = repository;
   }
 
-  private async ensureInitialized() {
-    try {
-      // await this.datasourceInitialized;
-      // console.log("Base de datos inicializada");
-    } catch (error) {
-      console.error("Error al inicializar la base de datos:", error);
-      throw error; // Propagar el error
-    }
-  }
-
   async createUser(newUser: NewUser[]): Promise<User | undefined> {
-    await this.ensureInitialized();
+    
     try {
       if (newUser && newUser.length === 1) {
         const userEntity = UserAdapter.mapNewUserToEntity(newUser[0]);
@@ -86,7 +76,7 @@ export class UserRepository {
   }*/
 
   async getAll(): Promise<UserBusiness[]> {
-    await this.ensureInitialized();
+    
     try {
       const users = await this.userRepository.manager.find(User);
       return UserEntityMapper.mapListToBusinessModel(users);
@@ -107,8 +97,6 @@ export class UserRepository {
   }
 
   async findByEmail(email: string): Promise<UserFindResult> {
-    await this.ensureInitialized();
-
     try {
       const usersFindedByEmail: User | null =
         await this.userRepository.manager.findOne(User, {

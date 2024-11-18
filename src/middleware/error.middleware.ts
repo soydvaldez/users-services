@@ -20,7 +20,9 @@ export function errorMiddleware(
     };
     console.log({ message }); //Mensaje real
     return res.status(401).json(genericMessage);
-  } else if (err.name === "Access Denied") {
+  }
+
+  if (err.name === "Access Denied") {
     const message = {
       error: "Authentication failed",
       message: "Invalid email or password",
@@ -28,6 +30,13 @@ export function errorMiddleware(
     console.log({ message }); //El log del error
     return res.status(401).json(genericMessage);
   }
+
+  if (err.message === "JsonWebTokenMissing") {
+    return res
+      .status(401)
+      .json({ error: "Token Expired", message: "Generate a new token" });
+  }
+  return res.status(401).json(genericMessage);
 }
 
 function registerEventHandler() {

@@ -32,8 +32,9 @@ const environmentConfig = () => {
 
   AUTH = Object.freeze({
     jwt_secret_key: process.env.JWT_SECRET_KEY || "secret_key",
+    authType: "bearer-token", //"basic-auth"
   });
-  
+
   console.log(
     `Database profile: "${ENVIRONMENT}", properties: [{HOST: ${DB_CONFIG.host}, PORT:${DB_CONFIG.port},USERNAME:${DB_CONFIG.username}, DATABASE:${DB_CONFIG.database}}] `
   );

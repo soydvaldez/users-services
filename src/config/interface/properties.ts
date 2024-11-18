@@ -13,4 +13,5 @@ export interface DB_PROPERTIES {
 
 export interface AUTH_PROPERTIES {
   jwt_secret_key: string;
+  authType: string;
 }

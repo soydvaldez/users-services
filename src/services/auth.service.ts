@@ -3,9 +3,11 @@ import { Role } from "../data/persistence/entities/Role";
 import { UserRepository } from "../data/persistence/repositories/user.repository";
 import { NewUser } from "../interface/user.interface";
 import { User } from "./models/user.model";
-import { HashUtils } from "./utils/hash.utils";
+import { PasswordUtils } from "./utils/password.utils";
 
 // Responsabilidad mediadora capa
+
+//Servicio para manejar la autenticacion del usuario
 
 type UserFindResult = {
   email: string;
@@ -34,12 +36,6 @@ export class AuthenticationService {
     return user;
   }
 
-  /**
-   *
-   * @param credentials email and plain password
-   * @returns isMatchPassword boolean
-   */
-  //
   async validateUserIdentity(credentials: { email: string; password: string }) {
     const findUser: {
       email: string;
@@ -48,34 +44,24 @@ export class AuthenticationService {
 
     const userBussines = this.createUserLogin(findUser);
 
-    return HashUtils.compareHashPassword(
+    return PasswordUtils.compareHashPassword(
       credentials.password,
       userBussines.getPassword()
     );
   }
 
-  /**
-   * Crea un modelo de negocio "User" a partir de un "findUser"
-   * @param findUser: { email: string; password: string }
-   * @returns User
-   */
   createUserLogin(findUser: { email: string; password: string }): User {
     return User.Builder.setEmail(findUser.email)
       .setPassword(findUser.password)
       .build();
   }
 
-  /**
-   * Crea un modelo de negocio "User" a partir de un "registerUserDTO"
-   * @param registerUserDTO
-   * @returns User
-   */
   private async createUser(registerUserDTO: RegisterUserDTO): Promise<User> {
     return User.Builder.setfirstName(registerUserDTO.firstName)
       .setlastName(registerUserDTO.lastName)
       .setEmail(registerUserDTO.email)
       .setPassword(
-        await HashUtils.generateHashedPassword(registerUserDTO.password)
+        await PasswordUtils.generateHashedPassword(registerUserDTO.password)
       )
       .build();
   }
