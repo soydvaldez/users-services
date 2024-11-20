@@ -12,14 +12,14 @@ export function errorMiddleware(
   res: Response<any, any>,
   next: NextFunction
 ) {
-  console.error("Error interno:", err); // Registro del error real
+  console.error(err); // Registro del error real
+
   if (err.name === "AuthenticationError") {
     const message = {
       error: "Authentication failed",
-      message: "Invalid email or password",
+      message: "Invalid Token",
     };
-    console.log({ message }); //Mensaje real
-    return res.status(401).json(genericMessage);
+    return res.status(401).json({ error: true, message });
   }
 
   if (err.name === "Access Denied") {
@@ -36,6 +36,18 @@ export function errorMiddleware(
       .status(401)
       .json({ error: "Token Expired", message: "Generate a new token" });
   }
+
+  // Generic message
+  if (err.message === "Invalid Token") {
+    // real issue
+    err.message;
+    //concret issue:
+    return res.status(401).json({
+      error: "Invalid Token ",
+      message: "If the issue persist contact with TI Deparment",
+    });
+  }
+
   return res.status(401).json(genericMessage);
 }
 

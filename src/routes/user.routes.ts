@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction, Router } from "express";
 import { UserController } from "../controllers/users.controller";
+import { validationMiddleware } from "../controllers/middlewares/validators/validation.middleware";
+import { RegisterUserDTO } from "../controllers/models/register.userDTO";
 
 // request.path: /edit
 // request.originalUrl: /users/edit
@@ -13,12 +15,14 @@ export class UserRouter {
 
   initRoutes() {
     this.routes.get("/", this.userController.getAll);
+    this.routes.get("/:id", this.userController.getById);
+
     this.routes.post(
-      "/edit",
-      (req: Request, res: Response, next: NextFunction) => {
-        return this.userController.edit(req, res, next);
-      }
+      "/",
+      validationMiddleware(RegisterUserDTO),
+      this.userController.create
     );
+
     this.routes.all("*", (req: Request, res: Response) => {
       return res
         .status(405)

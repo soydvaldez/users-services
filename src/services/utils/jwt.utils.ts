@@ -1,13 +1,13 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AUTH } from "../../config/env_setup";
-import { Role } from "../../middleware/utils";
+import { Roles } from "../../middleware/utils";
 
 type permissionType = "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
 
 export interface UserPayload {
   id: number;
   email: string;
-  role: Role;
+  role: Roles;
   permission: permissionType[];
 }
 
@@ -28,7 +28,7 @@ export class JWTUtils {
     return jwt.verify(bearerToken, AUTH.jwt_secret_key) as JwtPayload;
   }
 
-  static generatePayload(): Payload {
+  static generatePayload(userPayload: UserPayload): Payload {
     const issuedAt = Math.floor(Date.now() / 1000) - 30;
     const expirationTime = issuedAt + 60 * 60;
 
@@ -36,10 +36,10 @@ export class JWTUtils {
       iat: issuedAt,
       exp: expirationTime,
       user: {
-        id: 1,
-        email: "johndoe@domain.com",
-        role: Role.ADMIN,
-        permission: ["GET", "POST"],
+        id: userPayload.id,
+        email: userPayload.email,
+        role: userPayload.role,
+        permission: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       },
     };
   }

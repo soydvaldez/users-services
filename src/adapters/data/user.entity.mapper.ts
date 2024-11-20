@@ -1,4 +1,5 @@
 import { User as UserEntity } from "../../data/persistence/entities/User";
+import { CreateUser } from "../../services/models/user";
 import { User as UserBusiness } from "../../services/models/user.model";
 
 export class UserEntityMapper {
@@ -12,6 +13,11 @@ export class UserEntityMapper {
       .build();
   }
 
+  // Método genérico para mapear listas usando los métodos anteriores
+  static mapListToBusinessModel(userEntities: UserEntity[]): UserBusiness[] {
+    return userEntities.map(UserEntityMapper.toBusinessModel);
+  }
+
   // Método para mapear de UserBusiness a UserEntity
   static toEntityModel(userBusiness: UserBusiness): UserEntity {
     const userEntity = new UserEntity();
@@ -22,12 +28,17 @@ export class UserEntityMapper {
     return userEntity;
   }
 
-  // Método genérico para mapear listas usando los métodos anteriores
-  static mapListToBusinessModel(userEntities: UserEntity[]): UserBusiness[] {
-    return userEntities.map(UserEntityMapper.toBusinessModel);
-  }
-
   static mapListToEntityModel(userBusinesses: UserBusiness[]): UserEntity[] {
     return userBusinesses.map(UserEntityMapper.toEntityModel);
+  }
+
+  static createUserToEntity(createUser: CreateUser) {
+    const userEntity = new UserEntity();
+    userEntity.firstName = createUser.getFirstName();
+    userEntity.lastName = createUser.getLastName();
+    userEntity.email = createUser.getEmail();
+    userEntity.password = createUser.getPassword();
+    userEntity.roleId = createUser.getRolId()
+    return userEntity;
   }
 }

@@ -32,6 +32,10 @@ export class User {
     return this.password; // Considera que la contraseña debería estar hasheada
   }
 
+  public setPassword(hashedPassword: string) {
+    this.password = hashedPassword; // Considera que la contraseña debería estar hasheada
+  }
+
   public getRol(): Role {
     return this.role; // Considera que la contraseña debería estar hasheada
   }
@@ -51,9 +55,11 @@ export class UserBuilder {
   public lastName: string = "";
   public email: string = "";
   public password: string = "";
+
   public role: Role = {
     name: "",
   };
+  public roleId!: number;
 
   public setfirstName(firstName: string): this {
     this.firstName = firstName;
@@ -77,6 +83,11 @@ export class UserBuilder {
 
   public setRole(role: Role): this {
     this.role = role;
+    return this;
+  }
+
+  public setRoleId(roleId: number): this {
+    this.roleId = roleId;
     return this;
   }
 

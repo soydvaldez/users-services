@@ -1,12 +1,10 @@
-export type RoleType = "Admin" | "Editor" | "User" | "Viewer" | "Anonymous";
-
 export interface UserAuthorization {
   email: string;
   password: string;
   roleType: RoleType;
 }
 
-export enum Role {
+export enum Roles {
   ANONYMOUS = "Anonymous",
   ADMIN = "Admin",
   EDITOR = "Editor",
@@ -21,14 +19,12 @@ export class AuthorizationError extends Error {
   }
 }
 
-export type RecordRoleType = Record<RoleType, string[]>;
+export type RoleType = "Admin" | "Editor" | "User" | "Viewer" | "Anonymous";
 
-export const roleBasedRoutes: RecordRoleType = {
+export const roleBasedRoutes: Record<RoleType, string[]> = {
   Anonymous: ["/login", "/register"],
   Admin: ["/**"],
-  Editor: ["/users/edit/**", "/roles/edit/**"],
+  Editor: ["/users/**", "/roles/**"], // Editor: ["/users/edit/**", "/roles/edit/**"],
   User: ["/profile", "/dashboard"],
   Viewer: ["/users", "/roles", "/users/{id}"],
 };
-
-

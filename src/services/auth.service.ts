@@ -44,7 +44,7 @@ export class AuthenticationService {
 
     const userBussines = this.createUserLogin(findUser);
 
-    return PasswordUtils.compareHashPassword(
+    return PasswordUtils.compareHash(
       credentials.password,
       userBussines.getPassword()
     );
@@ -61,7 +61,7 @@ export class AuthenticationService {
       .setlastName(registerUserDTO.lastName)
       .setEmail(registerUserDTO.email)
       .setPassword(
-        await PasswordUtils.generateHashedPassword(registerUserDTO.password)
+        await PasswordUtils.generateHashed(registerUserDTO.password)
       )
       .build();
   }

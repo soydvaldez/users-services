@@ -4,13 +4,15 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { Role } from "./Role";
 
 @Entity("users")
 export class User {
   @PrimaryGeneratedColumn()
-  id?: number;
+  id!: number;
 
   @Column({ name: "firstname", type: "varchar", nullable: false })
   firstName!: string;
@@ -27,11 +29,17 @@ export class User {
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive!: boolean;
 
-  @Column({ name: "roleid", type: "number"})
+  @Column({ name: "role_id", type: "number" })
   roleId!: number; // Agrega esta columna para el id directamente
 
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
+  updatedAt!: Date;
+
   @ManyToOne(() => Role, (role) => role.users, { eager: true })
-  @JoinColumn({ name: "roleid" })
+  @JoinColumn({ name: "role_id" })
   role!: Role;
 
   getFullname() {

@@ -5,14 +5,19 @@ import { UserAdapter } from "../adapters/user.adapter";
 import { Role } from "../entities/Role";
 import { UserEntityMapper } from "../../../adapters/data/user.entity.mapper";
 import { User as UserBusiness } from "../../../services/models/user.model";
+import { CreateUser } from "../../../services/models/user";
 
 type UserFindResult = {
+  id: number;
   email: string;
   password: string;
   role: Role;
 };
 
 export class UserRepository {
+  createUser(users: NewUser[]) {
+    throw new Error("Method not implemented.");
+  }
   private static instance: UserRepository;
   private userRepository: Repository<User>;
 
@@ -21,62 +26,41 @@ export class UserRepository {
     this.userRepository = repository;
   }
 
-  async createUser(newUser: NewUser[]): Promise<User | undefined> {
-    
+  // async createUser(): Promise<User | undefined> {
+  //   try {
+  //     if (newUser && newUser.length === 1) {
+  //       const userEntity = UserAdapter.mapNewUserToEntity(newUser[0]);
+  //       const userEntitySaved: User = await this.userRepository.manager.save(
+  //         userEntity
+  //       );
+  //       // console.log("Usuario guardado con éxito", userEntitySaved);
+  //       return userEntitySaved;
+  //     } else {
+  //       // Persiste un arreglo de usuarios
+  //       const userEntities = UserAdapter.mapNewUserListToEntityList(newUser);
+  //       await this.userRepository.manager.save(userEntities);
+  //       console.log("Lost usuarios se guardaron con éxito");
+  //       // return userEntitiesSaved;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al guardar el usuario:", error);
+  //     return undefined; // Retorna undefined en caso de error
+  //   }
+  // }
+
+  async save(user: User) {
     try {
-      if (newUser && newUser.length === 1) {
-        const userEntity = UserAdapter.mapNewUserToEntity(newUser[0]);
-        const userEntitySaved: User = await this.userRepository.manager.save(
-          userEntity
-        );
-        // console.log("Usuario guardado con éxito", userEntitySaved);
-        return userEntitySaved;
-      } else {
-        // Persiste un arreglo de usuarios
-        const userEntities = UserAdapter.mapNewUserListToEntityList(newUser);
-        await this.userRepository.manager.save(userEntities);
-        console.log("Lost usuarios se guardaron con éxito");
-        // return userEntitiesSaved;
+      const userSaved: User = await this.userRepository.save(user);
+      if (!userSaved) {
+        throw new Error("User not saved");
       }
+      return userSaved;
     } catch (error) {
-      console.error("Error al guardar el usuario:", error);
-      return undefined; // Retorna undefined en caso de error
+      throw error;
     }
   }
 
-  /*async updateUser(inUserUpdate: User) {
-    await this.ensureInitialized();
-
-    const userUpdate = new User();
-    userUpdate.id = inUserUpdate.id;
-    userUpdate.firstName = inUserUpdate.firstName;
-    userUpdate.lastName = inUserUpdate.lastName;
-    userUpdate.email = inUserUpdate.email;
-    userUpdate.isActive = inUserUpdate.isActive;
-
-    try {
-      const result = await this.userRepository.manager
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          // firstname: userUpdate.firstName,
-          lastname: userUpdate.lastName,
-          email: userUpdate.email,
-          password: "temporal1234",
-          is_active: userUpdate.isActive,
-        })
-        .where("id = :id", { id: userUpdate.id })
-        .execute();
-      console.log("Usuario actualizado con éxito", result);
-      return result;
-    } catch (error) {
-      console.error("Error al guardar el usuario:", error);
-      return undefined; // Retorna undefined en caso de error
-    }
-  }*/
-
   async getAll(): Promise<UserBusiness[]> {
-    
     try {
       const users = await this.userRepository.manager.find(User);
       return UserEntityMapper.mapListToBusinessModel(users);
@@ -86,13 +70,20 @@ export class UserRepository {
     }
   }
 
-  // Método para cerrar la conexión
-  async closeConnection() {
+  async getById(id: number): Promise<UserBusiness> {
     try {
-      // await this.userRepository.destroy(); // Cerrar la conexión
-      console.log("Conexión a la base de datos cerrada.");
+      const id = 1;
+
+      const result = await this.userRepository.manager.findOne(User, {
+        where: { id },
+      });
+      if (!result) {
+        throw new Error("User not found");
+      }
+
+      return UserEntityMapper.toBusinessModel(result);
     } catch (error) {
-      console.error("Error al cerrar la conexión:", error);
+      throw error;
     }
   }
 
@@ -103,31 +94,19 @@ export class UserRepository {
           where: { email },
         });
 
-      if (usersFindedByEmail != null && usersFindedByEmail != undefined) {
-        return {
-          email: usersFindedByEmail.email,
-          password: usersFindedByEmail.password,
-          role: usersFindedByEmail.role,
-        };
+      if (!usersFindedByEmail) {
+        throw new Error("User not found");
       }
+
       return {
-        email: "",
-        password: "",
-        role: {
-          name: "",
-        },
+        id: usersFindedByEmail.id,
+        email: usersFindedByEmail.email,
+        password: usersFindedByEmail.password,
+        role: usersFindedByEmail.role,
       };
     } catch (error: any) {
       console.log(error);
       throw new Error("error");
     }
   }
-
-  // Método para obtener la instancia
-  // public static getInstance(): UserRepository {
-  // if (!UserRepository.instance) {
-  // UserRepository.instance = new UserRepository();
-  // }
-  // return UserRepository.instance;
-  // }
 }

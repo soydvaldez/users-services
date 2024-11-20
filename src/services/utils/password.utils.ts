@@ -1,12 +1,12 @@
 import bcrypt from "bcrypt";
 
 export class PasswordUtils {
-  static async generateHashedPassword(password: string): Promise<string> {
+  static async generateHashed(password: string): Promise<string> {
     let saltRounds = 5;
     return await bcrypt.hash(password, saltRounds);
   }
 
-  static async compareHashPassword(
+  static async compareHash(
     plainPassword: string,
     hashPassword: string
   ) {
