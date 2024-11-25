@@ -1,16 +1,21 @@
 import { User as UserEntity } from "../../data/persistence/entities/User";
-import { CreateUser } from "../../services/models/user";
+import { NewUser } from "../../services/models/newuser";
 import { User as UserBusiness } from "../../services/models/user.model";
 
 export class UserEntityMapper {
   // Método para mapear de UserEntity a UserBusiness
   static toBusinessModel(userEntity: UserEntity): UserBusiness {
-    return UserBusiness.Builder.setfirstName(userEntity.firstName)
+    let userBusiness = UserBusiness.Builder;
+    userBusiness
+      .setId(userEntity.id)
+      .setfirstName(userEntity.firstName)
       .setlastName(userEntity.lastName)
       .setEmail(userEntity.email)
       .setPassword(userEntity.password)
       .setRole(userEntity.role)
-      .build();
+      .setIsActive(userEntity.isActive);
+
+    return userBusiness.build();
   }
 
   // Método genérico para mapear listas usando los métodos anteriores
@@ -32,13 +37,18 @@ export class UserEntityMapper {
     return userBusinesses.map(UserEntityMapper.toEntityModel);
   }
 
-  static createUserToEntity(createUser: CreateUser) {
+  // Mappers para crear nuevos usuarios
+  static newUserToEntity(newUser: NewUser): UserEntity {
     const userEntity = new UserEntity();
-    userEntity.firstName = createUser.getFirstName();
-    userEntity.lastName = createUser.getLastName();
-    userEntity.email = createUser.getEmail();
-    userEntity.password = createUser.getPassword();
-    userEntity.roleId = createUser.getRolId()
+    userEntity.firstName = newUser.getFirstName();
+    userEntity.lastName = newUser.getLastName();
+    userEntity.email = newUser.getEmail();
+    userEntity.password = newUser.getPassword();
+    userEntity.roleId = newUser.getRolId();
     return userEntity;
+  }
+
+  static newUserListToEntities(newUsers: NewUser[]): UserEntity[] {
+    return newUsers.map(UserEntityMapper.newUserToEntity);
   }
 }

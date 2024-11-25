@@ -1,7 +1,9 @@
 -- Migrations will appear here as you chat with AI
 create table roles (
    id SERIAL PRIMARY KEY,
-   name varchar not null
+   name varchar not null UNIQUE,
+   created_at TIMESTAMPTZ DEFAULT NOW(),
+   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 create table users (
@@ -18,14 +20,14 @@ create table users (
 );
 
 insert into
-  roles (id,name)
+  roles (id,name, created_at,updated_at)
 values
-  (1,'Admin'),
-  (2,'Editor'),
-  (3,'Viewer'),
-  (4,'Contributor'),
-  (5,'Guest'),
-  (6,'Anonymous');
+  (1,'Admin','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00'),
+  (2,'Editor','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00'),
+  (3,'Viewer','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00'),
+  (4,'Contributor','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00'),
+  (5,'Guest','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00'),
+  (6,'Anonymous','2024-09-20 18:21:00.082648+00','2024-09-20 18:21:00.082648+00');
 
 -- Insert sample data into users
 insert into
@@ -38,3 +40,6 @@ values
   (5,'Carol', 'Dominguez','caroldominguez@domain.com','secret','2024-10-10 18:29:25.740259+00','2024-10-10 18:29:25.740259+00',true,3),
   (6,'David', 'Cameron', 'davidcameron@domain.com','secret','2024-11-10 18:29:25.740259+00','2024-11-10 18:29:25.740259+00',true ,4),
   (7,'Evelin', 'Verne', 'evelinverne@domain.com','secret','2024-11-10 18:29:25.740259+00','2024-11-10 18:29:25.740259+00',true,5);
+
+SELECT SETVAL('roles_id_seq', 6, true);
+SELECT SETVAL('users_id_seq', 7, true);

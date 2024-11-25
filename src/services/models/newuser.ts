@@ -1,11 +1,12 @@
-import { Roles } from "../../controllers/models/register.userDTO";
+import { UserRole } from "../../utils";
 import { PasswordUtils } from "../utils/password.utils";
 
-export class CreateUser {
+export class NewUser {
   public firstName!: string;
   public lastName!: string;
   public email!: string;
   public password!: string;
+  public isActive: boolean = true;
   public roleId!: number;
 
   constructor() {}
@@ -47,8 +48,8 @@ export class CreateUser {
     return this.roleId; // Considera que la contraseña debería estar hasheada
   }
 
-  public setRolId(role: Roles) {
-    this.roleId = Number(Roles[role]);
+  public setRolId(role: UserRole) {
+    this.roleId = Number(UserRole[role]);
   }
 
   public getFullName() {

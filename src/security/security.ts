@@ -1,5 +1,6 @@
-import { UserAdapter } from "../user.map.js";
+
 import { UserResponse, UserRole, Resource } from "../controllers/interfaces/user.interface.js";
+import { UserAdapter } from "./user.map.js";
 
 export const usersResponse: UserResponse[] = [
   {

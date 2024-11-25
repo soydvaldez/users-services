@@ -1,72 +1,74 @@
-import { RegisterUserDTO } from "../controllers/models/register.userDTO";
-import { Role } from "../data/persistence/entities/Role";
-import { UserRepository } from "../data/persistence/repositories/user.repository";
-import { NewUser } from "../interface/user.interface";
-import { User } from "./models/user.model";
 import { PasswordUtils } from "./utils/password.utils";
+import { JWTUtils } from "./utils/jwt.utils";
+import { Roles } from "../middleware/utils";
+import { LoginDTO } from "../controllers/models/login.requestDTO";
+import { RegisterUserDTO } from "../controllers/models/register.userDTO";
+import { UserService } from "./user.service";
 
-// Responsabilidad mediadora capa
+export class AuthService {
+  constructor(private readonly userService: UserService) {}
 
-//Servicio para manejar la autenticacion del usuario
+  // Funcion agrupadora
+  async signIn(credentials: LoginDTO) {
+    try {
+      const { email, password } = credentials;
 
-type UserFindResult = {
-  email: string;
-  password: string;
-  role: Role;
-};
+      if (!email || !password)
+        throw new Error("Email and password are required");
 
-export class AuthenticationService {
-  constructor(private readonly userRepository: UserRepository) {}
+      let user = await this.verifyIdentity(credentials);
 
-  public async register(registerUserDTO: RegisterUserDTO) {
-    let user: User = await this.createUser(registerUserDTO);
+      const payload = JWTUtils.generatePayload({
+        id: user.id,
+        email: user.email,
+        role: user.role.name as Roles,
+        permission: [],
+      });
 
-    // Es el contrato que se debe de cumplir para interactuar con la capa de datos
-    const newUser: NewUser = {
-      firstName: user.getFirstName(),
-      lastName: user.getLastName(),
-      email: user.getEmail(),
-      password: user.getPassword(),
-      isActive: true,
-    };
+      return await JWTUtils.sign(payload);
+    } catch (error) {
+      // lanzar excepcion arriba;
+      throw error;
+    }
+  }
 
-    const users: NewUser[] = [];
-    users.push(newUser);
-    this.userRepository.createUser(users);
+  getPermissions() {}
+
+  private async verifyIdentity(credentials: {
+    email: string;
+    password: string;
+  }) {
+    const { email, password } = credentials;
+    const plainPassword = password;
+
+    // Busca al usuario por email
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    // Verifica que la contraseña coincida
+    const isPasswordMatching = await PasswordUtils.compareHash(
+      plainPassword,
+      user.password
+    );
+
+    if (!isPasswordMatching) {
+      throw new Error("Wrong credentials!");
+    }
+
+    // Retorna al usuario autenticado
     return user;
   }
 
-  async validateUserIdentity(credentials: { email: string; password: string }) {
-    const findUser: {
-      email: string;
-      password: string;
-    } = await this.findByEmail(credentials.email);
-
-    const userBussines = this.createUserLogin(findUser);
-
-    return PasswordUtils.compareHash(
-      credentials.password,
-      userBussines.getPassword()
+  public async register(registerUserDTO: RegisterUserDTO) {
+    const userFinded = await this.userService.findByEmail(
+      registerUserDTO.email
     );
-  }
-
-  createUserLogin(findUser: { email: string; password: string }): User {
-    return User.Builder.setEmail(findUser.email)
-      .setPassword(findUser.password)
-      .build();
-  }
-
-  private async createUser(registerUserDTO: RegisterUserDTO): Promise<User> {
-    return User.Builder.setfirstName(registerUserDTO.firstName)
-      .setlastName(registerUserDTO.lastName)
-      .setEmail(registerUserDTO.email)
-      .setPassword(
-        await PasswordUtils.generateHashed(registerUserDTO.password)
-      )
-      .build();
-  }
-
-  findByEmail(email: string): Promise<UserFindResult> {
-    return this.userRepository.findByEmail(email);
+    if (userFinded) {
+      throw new Error("Email User already exists!");
+    }
+    return await this.userService.create(registerUserDTO);
   }
 }

@@ -1,8 +1,5 @@
-import {
-  UserRole,
-  Resource,
-  UserResponse,
-} from "./controllers/interfaces/user.interface";
+import { UserResponse, UserRole } from "../controllers/interfaces/user.interface";
+
 
 export class RolService {
   static roles: UserRole[] = [

@@ -1,19 +1,19 @@
 import { User as UserBusiness } from "../../services/models/user.model";
 import { UserControllerModel as UserControllerModel } from "../../controllers/models/user";
-import {
-  RegisterUserDTO,
-  Roles,
-} from "../../controllers/models/register.userDTO";
+import { RegisterUserDTO } from "../../controllers/models/register.userDTO";
+import { UserRole } from "../../utils";
 
 export class UserDtoMapper {
   static toModelController(userBusiness: UserBusiness): UserControllerModel {
     const ctrlModel = new UserControllerModel();
+    ctrlModel.id = userBusiness.getId();
     ctrlModel.firstName = userBusiness.getFirstName();
     ctrlModel.lastName = userBusiness.getLastName();
     ctrlModel.email = userBusiness.getEmail();
     ctrlModel.role = userBusiness.getRol();
     // Omite password si no es necesario en el contexto del controlador.
     ctrlModel.password = userBusiness.getPassword() ?? "";
+    ctrlModel.isActive = userBusiness.getIsActive();
     return ctrlModel;
   }
 
@@ -54,7 +54,7 @@ export class UserDtoMapper {
       .setlastName(registerUserDTO.lastName)
       .setEmail(registerUserDTO.email)
       .setPassword(registerUserDTO.password)
-      .setRoleId(Number(Roles[registerUserDTO.role]));
+      .setRoleId(Number(UserRole[registerUserDTO.role]));
 
     return userBuilder.build();
   }

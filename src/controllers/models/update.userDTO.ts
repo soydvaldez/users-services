@@ -1,7 +1,7 @@
 import { IsString, IsEmail, IsNotEmpty, IsEnum } from "class-validator";
 import { UserRole } from "../../utils";
 
-export class RegisterUserDTO {
+export class UserUpdateDTO {
   @IsString()
   @IsNotEmpty()
   public readonly firstName: string;

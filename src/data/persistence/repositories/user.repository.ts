@@ -1,11 +1,11 @@
-import { DataSource, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { User } from "../entities/User";
-import { NewUser } from "../../../interface/user.interface";
-import { UserAdapter } from "../adapters/user.adapter";
 import { Role } from "../entities/Role";
+import { NewUser } from "../../../interface/user.interface";
 import { UserEntityMapper } from "../../../adapters/data/user.entity.mapper";
 import { User as UserBusiness } from "../../../services/models/user.model";
-import { CreateUser } from "../../../services/models/user";
+import { AppDataSource } from "../persistence.module";
+import { UserUpdateDTO } from "../../../controllers/models/update.userDTO";
 
 type UserFindResult = {
   id: number;
@@ -15,9 +15,6 @@ type UserFindResult = {
 };
 
 export class UserRepository {
-  createUser(users: NewUser[]) {
-    throw new Error("Method not implemented.");
-  }
   private static instance: UserRepository;
   private userRepository: Repository<User>;
 
@@ -60,20 +57,41 @@ export class UserRepository {
     }
   }
 
-  async getAll(): Promise<UserBusiness[]> {
+  async getAll(): Promise<User[]> {
     try {
-      const users = await this.userRepository.manager.find(User);
-      return UserEntityMapper.mapListToBusinessModel(users);
+      const users: User[] = await this.userRepository.manager.find(User);
+      if (!users) {
+        throw new Error("not content");
+      }
+      return users;
     } catch (error) {
       console.error("Error al consultar usuarios:", error);
       return [];
     }
   }
 
+  async getActiveUsers() {
+    try {
+      // Pon una query para filtrar a los usuarios
+
+      const users: User[] = await AppDataSource!
+        .getRepository(User)
+        .createQueryBuilder("user")
+        .leftJoinAndSelect("user.role", "role")
+        .where("user.isActive = :isActive", { isActive: true })
+        .getMany();
+
+      if (users?.length === 0) {
+        throw new Error("No active users found");
+      }
+      return users;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getById(id: number): Promise<UserBusiness> {
     try {
-      const id = 1;
-
       const result = await this.userRepository.manager.findOne(User, {
         where: { id },
       });
@@ -87,7 +105,7 @@ export class UserRepository {
     }
   }
 
-  async findByEmail(email: string): Promise<UserFindResult> {
+  async findByEmail(email: string): Promise<UserFindResult | null> {
     try {
       const usersFindedByEmail: User | null =
         await this.userRepository.manager.findOne(User, {
@@ -95,7 +113,7 @@ export class UserRepository {
         });
 
       if (!usersFindedByEmail) {
-        throw new Error("User not found");
+        return null;
       }
 
       return {
@@ -104,9 +122,66 @@ export class UserRepository {
         password: usersFindedByEmail.password,
         role: usersFindedByEmail.role,
       };
-    } catch (error: any) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
       throw new Error("error");
+    }
+  }
+
+  async update(userId: number, user: NewUser) {
+    try {
+      const userFinded = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!userFinded) {
+        throw new Error("User  not found");
+      }
+      Object.assign(userFinded, user);
+      await this.userRepository.save(userFinded);
+      return userFinded;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async delete(id: number) {
+    try {
+      const result = await this.userRepository.update(id, {
+        isActive: false,
+        updatedAt: new Date(),
+      });
+      if (!result) {
+        throw new Error("User not update");
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateRole(userId: number, roleId: number) {
+    try {
+      const userFinded = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!userFinded) {
+        return null;
+      }
+
+      if (userFinded.roleId === roleId) {
+        throw new Error("User rolId already assignent");
+      }
+
+      const result = await this.userRepository.update(userId, {
+        roleId: roleId
+      });
+      if (!result) {
+        throw new Error("User not update");
+      }
+    } catch (error) {
+      throw new Error("error data layer");
     }
   }
 }

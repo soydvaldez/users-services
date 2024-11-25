@@ -1,18 +1,22 @@
-import { AUTH } from "../config/env_setup";
-import { UserRepository } from "../data/persistence/repositories/user.repository";
-import { AuthenticationService } from "./auth.service";
-import { LoginService } from "./login.service";
+import { AuthService } from "./auth.service";
+import { RoleService } from "./role.service";
+import { UserService } from "./user.service";
 
 // satisfacer dependencias, inicializar objetos y exponer los objetos al resto de la app.
 // Inicializar acceso a datos, aplicar variables de entorno
 
-const initializeServicesApp = (userRepository: UserRepository) => {
-  const authService = new AuthenticationService(userRepository);
-  const loginService = new LoginService(userRepository);
+const initializeServicesApp = (repositories: any[]) => {
+  const [userRepository, roleRepository] = repositories;
+  const userService = new UserService(userRepository);
+
+  const authService = new AuthService(userService);
+
+  const roleService = new RoleService(roleRepository);
 
   return {
-    loginService,
     authService,
+    userService,
+    roleService,
   };
 };
 

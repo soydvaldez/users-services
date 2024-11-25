@@ -2,6 +2,23 @@ import { NextFunction, Request, Response } from "express";
 import micromatch from "micromatch";
 import { IAuthorization } from "./IAuthorization";
 import { AuthorizationError, roleBasedRoutes, RoleType, UserAuthorization } from "./utils";
+import { AuthUserDTO } from "../controllers/models/auth.userDTO";
+import { Role } from "../data/persistence/entities/Role";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserFindResult; // Define la propiedad 'user' en la Request
+      authUserDTO: AuthUserDTO; // Define la propiedad 'user' en la Request
+    }
+  }
+}
+
+type UserFindResult = {
+  email: string;
+  password: string;
+  role: Role;
+};
 
 export class BasicAuthorizationMiddleware implements IAuthorization {
   autenticacion: string = "basic-auth";

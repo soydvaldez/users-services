@@ -1,25 +1,31 @@
 import { Router } from "express";
 import { validationMiddleware } from "../controllers/middlewares/validators/validation.middleware";
-import { AuthUserDTO } from "../controllers/models/auth.userDTO";
-import { AuthController } from "../controllers/auth.controller";
+import { LoginDTO } from "../controllers/models/login.requestDTO";
 import { RegisterUserDTO } from "../controllers/models/register.userDTO";
+import { AuthController } from "../controllers/auth.controller";
 
-export const AuthRoutes = (authController: AuthController) => {
-  const authRoutes = Router();
+export class AuthRouter {
+  private authRouter = Router();
 
-  authRoutes.post(
-    "/signIn",
-    validationMiddleware(AuthUserDTO),
-    authController.signIn
-  );
+  constructor(private readonly authController: AuthController) {
+    this.init();
+  }
 
-  authRoutes.post(
-    "/register",
-    validationMiddleware(RegisterUserDTO),
-    authController.register
-  );
+  init() {
+    this.authRouter.post(
+      "/login",
+      validationMiddleware(LoginDTO),
+      this.authController.login
+    );
 
-  return {
-    authRoutes,
-  };
-};
+    this.authRouter.post(
+      "/register",
+      validationMiddleware(RegisterUserDTO),
+      this.authController.register
+    );
+  }
+
+  getRoutes() {
+    return this.authRouter;
+  }
+}

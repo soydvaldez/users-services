@@ -8,43 +8,38 @@ import {
   getRepository,
 } from "./data/persistence/persistence.module";
 import { initializeMiddlewares } from "./middleware/middleware.module";
-import { AuthRoutes } from "./routes/auth.routes";
+
 import { RoleRoutes } from "./routes/role.routes";
 import { UserRouter } from "./routes/user.routes";
-import { AuthenticationService } from "./services/auth.service";
-import { RoleService } from "./services/role.service";
-import { UserService } from "./services/user.service";
 import morgan from "morgan";
 import { APP_CONFIG, DB_CONFIG } from "./config/env_setup";
-import { LoginController } from "./controllers/login.controller";
-import { LoginRouter } from "./routes/login.routes";
-import { LoginService } from "./services/login.service";
 import { UserRepository } from "./data/persistence/repositories/user.repository";
 import { initializeServicesApp } from "./services/services.module";
+import { RoleRepository } from "./data/persistence/repositories/role.repository";
+import { AuthRouter } from "./routes/auth.routes";
 
 const app = express();
 
 const setupServer = async () => {
   const userRepository: UserRepository = await getRepository("UserRepository");
-  const userService = new UserService(userRepository);
+  const roleRepository: RoleRepository = await getRepository("RoleRepository");
+
+  const repositories = [userRepository, roleRepository];
+
+  const { authService, userService, roleService } =
+    initializeServicesApp(repositories);
+
   const userController = new UserController(userService);
   const userRoutes = new UserRouter(userController).getRoutes();
 
-  const { loginService, authService } = initializeServicesApp(userRepository);
+  const loginController = new AuthController(authService);
+  const authRouter = new AuthRouter(loginController);
+  const authRoutes = authRouter.getRoutes();
 
-  const loginController = new LoginController(loginService);
-  const loginRouter = new LoginRouter(loginController);
-  const loginRoutes = loginRouter.getRoutes();
-
-  const authController = new AuthController(authService);
-  const { authRoutes } = AuthRoutes(authController);
-
-  const roleRepository = await getRepository("RoleRepository");
-  const roleService = new RoleService(roleRepository);
   let roleController = new RoleController(roleService);
   const { roleRoutes } = RoleRoutes(roleController);
 
-  const { securityMiddlewares } = initializeMiddlewares(authService);
+  const { securityMiddlewares } = initializeMiddlewares();
 
   app.use(express.json());
   app.disable("x-powered-by");
@@ -54,7 +49,7 @@ const setupServer = async () => {
   app.use(`${baseUrl}/auth`, authRoutes);
   app.use(`${baseUrl}/users`, userRoutes);
   app.use(`${baseUrl}/roles`, roleRoutes);
-  app.use(`/api/v1/login`, loginRoutes);
+  app.use(`/api/v1/auth`, authRoutes);
 
   app.use((req, res, next) => {
     const message: string = "ruta no encontrada";

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { JWTUtils, UserPayload } from "../../services/utils/jwt.utils";
-import { AuthenticationService } from "../../services/auth.service";
 import { JwtPayload } from "jsonwebtoken";
 import { roleBasedRoutes, Roles, RoleType } from "../utils";
 import micromatch from "micromatch";
@@ -19,10 +18,10 @@ class AuthenticationError extends Error {
 // Mover esta logica a la capa de negocio
 
 export class BearerTokenValidator {
-  constructor(private readonly authenticationService: AuthenticationService) {}
+  constructor() {}
 
   private isAPublicRoute = (path: string) => {
-    return path === `${baseURL}/login` || path === `${baseURL}/register`;
+    return path === `${baseURL}/auth/login` || path === `${baseURL}/auth/register`;
   };
 
   verifyAuth = async (req: Request, res: Response, next: NextFunction) => {
