@@ -33,4 +33,14 @@ export class RoleRepository {
       return []; // Retorna un arreglo vacío en caso de error
     }
   }
+
+  async create(roleName: string) {
+    try {
+      const roleEntity = new Role();
+      roleEntity.name = roleName;
+      await this.roleRepository.save(roleEntity);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
